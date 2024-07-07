@@ -16,7 +16,6 @@ export async function createUser(email: string) {
   const [user] = await db.insert(users).values({
     email,
   });
-  console.log("user from data-access ", user);
   return user;
 }
 

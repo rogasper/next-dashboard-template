@@ -6,7 +6,11 @@ import {
   verifyPassword,
 } from "@/data-access/users";
 import { AuthenticationError, EmailInUseError, LoginError } from "./error";
-import { createAccount, updatePassword } from "@/data-access/accounts";
+import {
+  createAccount,
+  createAccountViaGoogle,
+  updatePassword,
+} from "@/data-access/accounts";
 import {
   createPasswordResetToken,
   deletePasswordResetToken,
@@ -24,6 +28,7 @@ import { applicationName } from "@/app-config";
 import VerifyEmail from "@/emails/verify-email";
 import { createTransaction } from "@/data-access/utils";
 import { ResetPasswordEmail } from "@/emails/reset-password";
+import { GoogleUser } from "@/app/api/login/google/callback/route";
 
 export async function signInUseCase(email: string, password: string) {
   const user = await getUserByEmail(email);
@@ -58,7 +63,9 @@ export async function registerUserUseCase(email: string, password: string) {
   await sendEmail(
     email,
     `Verify your email address for ${applicationName}`,
-    VerifyEmail(token)
+    // VerifyEmail(token)
+    true,
+    token
   );
 
   return { id: user.insertId };
@@ -76,7 +83,9 @@ export async function resetPasswordUseCase(email: string) {
   await sendEmail(
     email,
     `To reset your password for ${applicationName}`,
-    ResetPasswordEmail(token)
+    // ResetPasswordEmail(token)
+    false,
+    token
   );
 }
 
@@ -106,4 +115,24 @@ export async function changePasswordUseCase(token: string, password: string) {
     await deletePasswordResetToken(token, trx);
     await updatePassword(userId, password, trx);
   });
+}
+
+export async function createGoogleUserUseCase(googleUser: GoogleUser) {
+  let existingUser = await getUserByEmail(googleUser.email);
+
+  if (!existingUser) {
+    // existingUser = await createUser(googleUser.email);
+    let newUser = await createUser(googleUser.email);
+    newUser.insertId;
+    await createAccountViaGoogle(newUser.insertId, googleUser.sub);
+
+    await createProfile(newUser.insertId, googleUser.name, googleUser.picture);
+    return newUser?.insertId;
+  }
+
+  await createAccountViaGoogle(existingUser?.id, googleUser.sub);
+
+  await createProfile(existingUser?.id, googleUser.name, googleUser.picture);
+
+  return existingUser?.id;
 }

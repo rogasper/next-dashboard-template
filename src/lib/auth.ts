@@ -1,6 +1,8 @@
 import { db } from "@/db";
 import { sessions, users } from "@/db/schema";
+import { env } from "@/env";
 import { DrizzleMySQLAdapter } from "@lucia-auth/adapter-drizzle";
+import { Google } from "arctic";
 import { Lucia, Session, User } from "lucia";
 import { cookies } from "next/headers";
 
@@ -58,3 +60,9 @@ declare module "lucia" {
     UserId: number;
   }
 }
+
+export const googleAuth = new Google(
+  env.GOOGLE_CLIENT_ID,
+  env.GOOGLE_CLIENT_SECRET,
+  `${env.HOST_NAME}/api/login/google/callback`
+);

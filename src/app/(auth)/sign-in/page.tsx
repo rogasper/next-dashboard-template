@@ -1,4 +1,5 @@
-import { Button } from "@/components/ui/button";
+import GoogleIcon from "@/components/icons/GoogleIcon";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { assertAuthenticated, getCurrentUser } from "@/lib/session";
 import { cn } from "@/lib/utils";
 import { btnStyles } from "@/styles/icons";
@@ -18,7 +19,18 @@ function SignInPage() {
           </p>
         </div>
         <div className="space-y-4">
-          {/* todo: google */}
+          <Link
+            href={"/api/login/google"}
+            className={cn(
+              buttonVariants({
+                variant: "secondary",
+              }),
+              "w-full"
+            )}
+          >
+            <GoogleIcon className="h-5 w-5 mr-2" />
+            Sign in with Google
+          </Link>
 
           <div className="relative py-4">
             <div className="absolute inset-0 flex items-center">

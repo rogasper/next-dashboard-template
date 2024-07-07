@@ -35,6 +35,14 @@ export async function createAccount(userId: UserId, password: string) {
   return account;
 }
 
+export async function createAccountViaGoogle(userId: UserId, googleId: string) {
+  await db.insert(accounts).values({
+    userId: userId,
+    accountType: "google",
+    googleId,
+  });
+}
+
 export async function getAccountByUserId(userId: UserId) {
   const account = await db.query.accounts.findFirst({
     where: eq(accounts.userId, userId),
@@ -57,4 +65,10 @@ export async function updatePassword(
       salt,
     })
     .where(and(eq(accounts.userId, userId), eq(accounts.accountType, "email")));
+}
+
+export async function getAccountByGoogleId(googleId: string) {
+  return await db.query.accounts.findFirst({
+    where: eq(accounts.googleId, googleId),
+  });
 }
